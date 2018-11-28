@@ -3,26 +3,28 @@ import matplotlib.pyplot as plt
 import matplotlib.path as pth
 import matplotlib.patches as patches
 import obstacle
+import math
+import robot
 import random
 
 FIELD_DIM = 20
 STEP_COST = 3
 SPLITS = 4
 
-obstacles = [obstacle.Obstacle(10, 2, 1, 3), obstacle.Obstacle(3, 4, 1, 1), obstacle.Obstacle(5, 2, 1, 1), obstacle.Obstacle(15, 8, 1, 1), obstacle.Obstacle(5, 13, 1, 1)]
+# obstacles = [obstacle.Obstacle(10, 2, 1, 3), obstacle.Obstacle(3, 4, 1, 1), obstacle.Obstacle(5, 2, 1, 1), obstacle.Obstacle(15, 8, 1, 1), obstacle.Obstacle(5, 13, 1, 1)]
 start = [1, 1]
 target = [18, 18]
 
 field = [[0 for _ in range (FIELD_DIM)] for _ in range(FIELD_DIM)]
 
-for obs in obstacles:
-    for y in range(FIELD_DIM):
-        for x in range(FIELD_DIM):
-            field[y][x] += obs.cost_of_point_after_time(x, y, 2)
+# for obs in obstacles:
+#     for y in range(FIELD_DIM):
+#         for x in range(FIELD_DIM):
+#             field[y][x] += obs.cost_of_point_after_time(x, y, 2)
 
-for y in range(FIELD_DIM):
-    for x in range(FIELD_DIM):
-        field[y][x] /= len(obstacles)
+# for y in range(FIELD_DIM):
+#     for x in range(FIELD_DIM):
+#         field[y][x] /= len(obstacles)
 
 # def pathfind(location, target, curPath = []):
 #
@@ -58,4 +60,7 @@ def main():
 
 
 if __name__ == '__main__':
-    main()
+    # main()
+    robot = robot.Robot(3, 4, math.pi/2, 5, 7)
+    obstacle = obstacle.Obstacle(10, 11, 3 * math.pi/4, 5, 7, robot)
+    print(obstacle.perimeter_points())
