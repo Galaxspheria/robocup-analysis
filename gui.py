@@ -61,6 +61,6 @@ def main():
 
 if __name__ == '__main__':
     # main()
-    robot = robot.Robot(3, 4, math.pi/2, 5)
+    robot = robot.Robot(5, 4, math.pi/2, 5)
     obstacle = obstacle.Obstacle(10, 11, 3 * math.pi/4, 5, robot)
     print(obstacle.perimeter_points())

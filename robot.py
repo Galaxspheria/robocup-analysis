@@ -1,7 +1,7 @@
 import math
 
 VELOCITY_CAP = 7
-ACCELERATION_CAP = 40
+ACCELERATION_CONSTANT = 15
 
 
 class Robot:
@@ -11,7 +11,7 @@ class Robot:
         self.y = y
         self.theta = theta
         self.velocity = velocity
-        self.acceleration = ACCELERATION_CAP
+        self.acceleration = ACCELERATION_CONSTANT
         self.horizontal_velocity = velocity * math.cos(theta)
         self.vertical_velocity = velocity * math.sin(theta)
         self.horizontal_acceleration = self.acceleration * math.cos(theta)
