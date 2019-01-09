@@ -1,7 +1,8 @@
 import math
 import robot
 
-DELTA_DEGREES = math.pi/3
+SAMPLE_COUNT = 6
+DELTA_DEGREES = 2 * math.pi / SAMPLE_COUNT
 
 
 class Obstacle(robot.Robot):
@@ -9,10 +10,9 @@ class Obstacle(robot.Robot):
         super().__init__(x, y, theta, velocity)
         self.main_robot = main_robot  # the robot that we are path finding for
 
-    # TODO: fix function when x values are equal (maybe y values?) DON'T COMMIT!!!
     # determines a set of points along the perimeter of the obstacle cost field
     def perimeter_points(self):
-        # calculates time components for each axis and then finds the time componenet for the hypotenuse
+        # calculates time components for each axis and then finds the time component for the hypotenuse
         horizontal_acc_to_main, horizontal_acc_to_obstacle, vertical_acc_to_main, vertical_acc_to_obstacle = \
             self.__acceleration_components_between_robots()
         horizontal_collision_time = self.__time_to_collision(
@@ -30,7 +30,39 @@ class Obstacle(robot.Robot):
             vertical_acc_to_obstacle,
             vertical_acc_to_main)
         time = max(horizontal_collision_time, vertical_collision_time)
-        return time
+        for i in range(SAMPLE_COUNT):
+            distance_x = 0
+            distance_y = 0
+            theta = i * DELTA_DEGREES
+            initial_velocity_x = self.velocity * math.cos(self.theta)
+            acceleration_component_x = self.acceleration * math.cos(theta)
+            if acceleration_component_x == 0:
+                distance_x = initial_velocity_x * time
+            else:
+                velocity_cap_x = self.velocity_cap * math.cos(theta)
+                cap_time_x = (velocity_cap_x - initial_velocity_x) / acceleration_component_x
+                time_remaining_x = time - cap_time_x
+                if time_remaining_x < 0:
+                    distance_x = initial_velocity_x * time + .5 * acceleration_component_x * time ** 2
+                else:
+                    distance_x = initial_velocity_x * cap_time_x + .5 * acceleration_component_x * cap_time_x ** 2 + \
+                                 velocity_cap_x * time_remaining_x
+            # same thing but for the y component
+            initial_velocity_y = self.velocity * math.sin(self.theta)
+            acceleration_component_y = self.acceleration * math.sin(theta)
+            if acceleration_component_y == 0:
+                distance_y = initial_velocity_y * time
+            else:
+                velocity_cap_y = self.velocity_cap * math.sin(theta)
+                cap_time_y = (velocity_cap_y - initial_velocity_y) / acceleration_component_y
+                time_remaining_y = time - cap_time_y
+                if time_remaining_y < 0:
+                    distance_y = initial_velocity_y * time + .5 * acceleration_component_y * time ** 2
+                else:
+                    distance_y = initial_velocity_y * cap_time_y + .5 * acceleration_component_y * cap_time_y ** 2 + \
+                                 velocity_cap_y * time_remaining_y
+            print("" + str(i) + ": " + str(distance_x) + " " + str(distance_y))
+        # return distance_x, distance_y
 
     # this function works
     def __acceleration_components_between_robots(self):
