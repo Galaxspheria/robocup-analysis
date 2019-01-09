@@ -1,7 +1,7 @@
 import math
 
 VELOCITY_CAP = 7
-ACCELERATION_CONSTANT = 15
+ACCELERATION_CONSTANT = 16
 
 
 class Robot:
