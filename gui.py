@@ -7,7 +7,8 @@ import math
 import robot
 import random
 
-FIELD_DIM = 20
+FIELD_DIM_X = 20
+FIELD_DIM_Y = 40
 STEP_COST = 3
 SPLITS = 4
 
@@ -15,7 +16,7 @@ SPLITS = 4
 start = [1, 1]
 target = [18, 18]
 
-field = [[0 for _ in range (FIELD_DIM)] for _ in range(FIELD_DIM)]
+field = [[0 for _ in range (FIELD_DIM_X)] for _ in range(FIELD_DIM_Y)]
 
 # for obs in obstacles:
 #     for y in range(FIELD_DIM):
@@ -61,6 +62,6 @@ def main():
 
 if __name__ == '__main__':
     # main()
-    robot = robot.Robot(5, 4, math.pi/2, 5)
-    obstacle = obstacle.Obstacle(5, 11, 3 * math.pi/4, 5, robot)
+    robot = robot.Robot(0, 0, math.pi/2, 2)
+    obstacle = obstacle.Obstacle(5, 5, 0*math.pi/4, 5, robot)
     print(obstacle.perimeter_points())
