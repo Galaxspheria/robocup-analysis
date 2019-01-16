@@ -54,8 +54,7 @@ class Obstacle(robot.Robot):
                                (round((coordinate[0] - center_x_pos) * DIST_FROM_CENTER + center_x_pos),
                                 round((coordinate[1] - center_y_pos) * DIST_FROM_CENTER + center_y_pos)),
                                perimeter)
-        print(*center_perimeter)
-        return perimeter, inner_perimeter, center_perimeter
+        return perimeter, list(inner_perimeter), list(center_perimeter)
 
     def time_to_collision(self, dx, dy, cap):
         return (math.sqrt(dx**2 + dy**2) / cap) * COLLISION_TIME_CONSTANT
