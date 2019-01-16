@@ -3,7 +3,10 @@ import robot
 
 SAMPLE_COUNT = 20
 DELTA_DEGREES = 2 * math.pi / SAMPLE_COUNT
-COLLISION_TIME_CONSTANT = 0.5 # TODO: experiment with this eventually
+# TODO: experiment with all of these eventually
+COLLISION_TIME_CONSTANT = 0.5
+DIST_FROM_OUTER_PERIMETER = 0.2
+DIST_FROM_CENTER = 0.2
 
 
 class Obstacle(robot.Robot):
@@ -14,7 +17,9 @@ class Obstacle(robot.Robot):
     # determines a set of points along the perimeter of the obstacle cost field
     def perimeter_points(self):
 
-        perimeter = [];
+        perimeter = []
+        inner_perimeter = []
+        center_perimeter = []
 
         time = self.time_to_collision(self.main_robot.x - self.x,
                                       self.main_robot.y - self.y,
@@ -36,8 +41,21 @@ class Obstacle(robot.Robot):
                                            self.main_robot.acceleration * round(math.sin(accTheta), 3),
                                            time,
                                            self.main_robot.velocity_cap * (0 if (yCon == 0) else (1 if (yCon > 0) else -1)))
-            perimeter.append((round(xPos), round(yPos)))
-        return perimeter
+            perimeter.append((int(xPos), int(yPos)))
+        x_coordinates = list(map(lambda coord: coord[0], perimeter))
+        y_coordinates = list(map(lambda coord: coord[1], perimeter))
+        center_x_pos = sum(x_coordinates)/len(x_coordinates)
+        center_y_pos = sum(y_coordinates)/len(y_coordinates)
+        inner_perimeter = map(lambda coordinate:
+                              (round((coordinate[0] - center_x_pos) * (1 - DIST_FROM_OUTER_PERIMETER) + center_x_pos),
+                               round((coordinate[1] - center_y_pos) * (1 - DIST_FROM_OUTER_PERIMETER) + center_y_pos)),
+                              perimeter)
+        center_perimeter = map(lambda coordinate:
+                               (round((coordinate[0] - center_x_pos) * DIST_FROM_CENTER + center_x_pos),
+                                round((coordinate[1] - center_y_pos) * DIST_FROM_CENTER + center_y_pos)),
+                               perimeter)
+        print(*center_perimeter)
+        return perimeter, inner_perimeter, center_perimeter
 
     def time_to_collision(self, dx, dy, cap):
         return (math.sqrt(dx**2 + dy**2) / cap) * COLLISION_TIME_CONSTANT
