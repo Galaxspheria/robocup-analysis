@@ -36,8 +36,8 @@ class Obstacle(robot.Robot):
                                            self.main_robot.acceleration * round(math.sin(accTheta), 3),
                                            time,
                                            self.main_robot.velocity_cap * (0 if (yCon == 0) else (1 if (yCon > 0) else -1)))
-            perimeter.append((xPos, yPos))
-        return perimeter;
+            perimeter.append((round(xPos), round(yPos)))
+        return perimeter
 
     def time_to_collision(self, dx, dy, cap):
         return (math.sqrt(dx**2 + dy**2) / cap) * COLLISION_TIME_CONSTANT
