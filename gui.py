@@ -39,13 +39,31 @@ def main():
 
     for obs in obstacles:
         perimeter = obs.perimeter_points();
-        for point in perimeter:
-            if 0 <= point[0] < FIELD_DIM_X and 0 <= point[1] < FIELD_DIM_Y:
-                field[point[0]][point[1]] += 100
-                for x in range(-10, 10):
-                    for y in range(-10, 10):
-                        if not x * y == 0:
-                            field[point[0] + x][point[1] + y] += 100 / (abs(x * y))
+        # for point in perimeter:
+        #     if 0 <= point[0] < FIELD_DIM_X and 0 <= point[1] < FIELD_DIM_Y:
+        #         field[point[0]][point[1]] += 100
+        #         for x in range(-10, 10):
+        #             for y in range(-10, 10):
+        #                 if not x * y == 0:
+        #                     field[point[0] + x][point[1] + y] += 100 / (abs(x * y))
+        pln = len(perimeter)
+        for pindex in range(pln):
+            x = perimeter[pindex][0]
+            y = perimeter[pindex][1]
+            while not perimeter[(pindex + 1) % pln][0] - x == 0 or not perimeter[(pindex + 1) % pln][1] - y == 0:
+                if 0 <= perimeter[pindex][0] < FIELD_DIM_X and 0 <= perimeter[pindex][1] < FIELD_DIM_Y:
+                    field[int(y)][int(x)] += 100
+                if not perimeter[(pindex + 1) % pln][0] - x == 0:
+                    x += (perimeter[(pindex + 1) % pln][0] - x) / abs(perimeter[(pindex + 1) % pln][0] - x)
+                if not perimeter[(pindex + 1) % pln][1] - y == 0:
+                    y += (perimeter[(pindex + 1) % pln][1] - y) / abs(perimeter[(pindex + 1) % pln][1] - y)
+        mid = (int(sum(map(lambda point: point[0], perimeter)) / pln), int(sum(map(lambda point: point[1], perimeter)) / pln))
+        print(mid)
+        # for y in range(-50, 50):
+        #     for x in range(-50, 50):
+        #         if 0 <= x < FIELD_DIM_X and 0 <= y < FIELD_DIM_Y:
+        #             if not x * y == 0:
+        #                 field[mid[1] + y][mid[0] + x] += 200 / (abs(x * y))
         # for y in range(FIELD_DIM_Y):
         #     for x in range(FIELD_DIM_X):
         #         field[y][x] += obs.cost_of_point_after_time(x, y, 2)
