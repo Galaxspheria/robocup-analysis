@@ -38,7 +38,7 @@ def main():
     field = [[0 for _ in range(FIELD_DIM_X)] for _ in range(FIELD_DIM_Y)]
 
     for obs in obstacles:
-        perimeter = obs.perimeter_points();
+        perimeter = obs.perimeter_points()[0];
         for point in perimeter:
             if 0 <= point[0] < FIELD_DIM_X and 0 <= point[1] < FIELD_DIM_Y:
                 field[point[0]][point[1]] += 100
