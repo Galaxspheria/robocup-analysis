@@ -5,10 +5,13 @@ import matplotlib.patches as patches
 import obstacle
 import math
 import robot
+from functools import reduce
 
 # Distances in cm
 FIELD_DIM_X = 600
 FIELD_DIM_Y = 900
+GOAL = (500, 600)
+STEPTH = 0.2
 # STEP_COST = 3
 # SPLITS = 4
 
@@ -37,9 +40,25 @@ def main():
 
     field = [[0 for _ in range(FIELD_DIM_X)] for _ in range(FIELD_DIM_Y)]
 
+    for y in range(FIELD_DIM_Y):
+        for x in range(FIELD_DIM_X):
+            field[y][x] += math.sqrt((GOAL[0] - x) ** 2 + (GOAL[1] - y) ** 2) * STEPTH
+
     for obs in obstacles:
         p = obs.perimeter_points()
         perimeter = p[0] + p[1] + p[2]
+        minX = min(list(map(lambda pt: pt[0], p[0])))
+        maxX = max(list(map(lambda pt: pt[0], p[0])))
+        minY = min(list(map(lambda pt: pt[1], p[0])))
+        maxY = max(list(map(lambda pt: pt[1], p[0])))
+        # perimeter = []
+        # for i in range(len(p[0])):
+        #     perimeter.append(p[0].pop())
+        #     perimeter.append(p[1][i])
+
+        # for i in range(len(p[1])):
+        #     perimeter.append(p[1].pop())
+        #     perimeter.append(p[2].pop())
         # for point in perimeter:
         #     if 0 <= point[0] < FIELD_DIM_X and 0 <= point[1] < FIELD_DIM_Y:
         #         field[point[0]][point[1]] += 100
@@ -47,18 +66,26 @@ def main():
         #             for y in range(-10, 10):
         #                 if not x * y == 0:
         #                     field[point[0] + x][point[1] + y] += 100 / (abs(x * y))
-        pln = len(perimeter)
-        for pindex in range(pln):
-            x = perimeter[pindex][0]
-            y = perimeter[pindex][1]
-            while not perimeter[(pindex + 1) % pln][0] - x == 0 or not perimeter[(pindex + 1) % pln][1] - y == 0:
-                if 0 <= perimeter[pindex][0] < FIELD_DIM_X and 0 <= perimeter[pindex][1] < FIELD_DIM_Y:
-                    field[int(y)][int(x)] += 100
-                if not perimeter[(pindex + 1) % pln][0] - x == 0:
-                    x += (perimeter[(pindex + 1) % pln][0] - x) / abs(perimeter[(pindex + 1) % pln][0] - x)
-                if not perimeter[(pindex + 1) % pln][1] - y == 0:
-                    y += (perimeter[(pindex + 1) % pln][1] - y) / abs(perimeter[(pindex + 1) % pln][1] - y)
-        mid = (int(sum(map(lambda point: point[0], perimeter)) / pln), int(sum(map(lambda point: point[1], perimeter)) / pln))
+
+        for y in range(minY, maxY):
+            for x in range(minX, maxX):
+                if (0 <= x < FIELD_DIM_X and 0 <= y < FIELD_DIM_Y):
+                    field[y][x] += (((maxY - minY) * (maxX - minX)) ** (1/2) * 200 / sum(map(lambda pt: math.sqrt((pt[0] - x) ** 2 + (pt[1] - y) ** 2), perimeter)))**2
+
+        # pln = len(perimeter)
+        # for pindex in range(pln):
+        #     x = perimeter[pindex][0]
+        #     y = perimeter[pindex][1]
+        #     while not perimeter[(pindex + 1) % pln][0] - x == 0 or not perimeter[(pindex + 1) % pln][1] - y == 0:
+        #         if 0 <= perimeter[pindex][0] < FIELD_DIM_X and 0 <= perimeter[pindex][1] < FIELD_DIM_Y:
+        #             field[int(y)][int(x)] += 100
+        #         if not perimeter[(pindex + 1) % pln][0] - x == 0:
+        #             x += (perimeter[(pindex + 1) % pln][0] - x) / abs(perimeter[(pindex + 1) % pln][0] - x)
+        #         if not perimeter[(pindex + 1) % pln][1] - y == 0:
+        #             y += (perimeter[(pindex + 1) % pln][1] - y) / abs(perimeter[(pindex + 1) % pln][1] - y)
+        # mid = (int(sum(map(lambda point: point[0], perimeter)) / pln), int(sum(map(lambda point: point[1], perimeter)) / pln))
+
+
         # print(mid)
         # for y in range(-50, 50):
         #     for x in range(-50, 50):

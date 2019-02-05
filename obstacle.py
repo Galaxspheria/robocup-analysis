@@ -4,7 +4,7 @@ import robot
 SAMPLE_COUNT = 20
 DELTA_DEGREES = 2 * math.pi / SAMPLE_COUNT
 # TODO: experiment with all of these eventually
-COLLISION_TIME_CONSTANT = 0.5
+COLLISION_TIME_CONSTANT = 1
 DIST_FROM_OUTER_PERIMETER = 0.2
 DIST_FROM_CENTER = 0.2
 
