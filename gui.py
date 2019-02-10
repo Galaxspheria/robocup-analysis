@@ -87,7 +87,7 @@ def main():
                     closest_distance = closest_distance if closest_distance < dist_from_center else dist_from_center
                     # 3. 1/distance
                     if not closest_distance == 0:
-                        field[y][x] += (1500/(math.sqrt(closest_distance)))
+                        field[y][x] += (200/(math.sqrt(closest_distance)))
                     #field[y][x] = (((maxY - minY) * (maxX - minX)) ** (1/2) * 200 / sum(map(lambda pt: math.sqrt((pt[0] - x) ** 2 + (pt[1] - y) ** 2), perimeter)))**2
 
         # pln = len(perimeter)
