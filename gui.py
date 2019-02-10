@@ -51,6 +51,8 @@ def main():
         maxX = max(list(map(lambda pt: pt[0], p[0])))
         minY = min(list(map(lambda pt: pt[1], p[0])))
         maxY = max(list(map(lambda pt: pt[1], p[0])))
+        avg_perimeter = list(map(lambda ptA, ptB: ((ptA[0] + ptB[0])/2, (ptA[1] + ptB[1])/2), p[0], p[1]))
+        print(len(avg_perimeter))
         # perimeter = []
         # for i in range(len(p[0])):
         #     perimeter.append(p[0].pop())
@@ -70,7 +72,21 @@ def main():
         for y in range(minY, maxY):
             for x in range(minX, maxX):
                 if (0 <= x < FIELD_DIM_X and 0 <= y < FIELD_DIM_Y):
-                    field[y][x] += (((maxY - minY) * (maxX - minX)) ** (1/2) * 200 / sum(map(lambda pt: math.sqrt((pt[0] - x) ** 2 + (pt[1] - y) ** 2), perimeter)))**2
+                    # 1. get closest point in avg_perimeter
+                    closest_distance = (x - avg_perimeter[0][0])**2 + (y - avg_perimeter[0][1])**2
+                    for coord in avg_perimeter:
+                        distance = (x - coord[0])**2 + (y - coord[1])**2
+                        if distance < closest_distance:
+                            closest_distance = distance
+                    # 2. get distance from center
+                    center = (obs.x, obs.y)
+                    dist_from_center = (x - center[0])**2 + (y - center[1])**2
+                    # 3. check which one is the closest
+                    closest_distance = closest_distance if closest_distance < dist_from_center else dist_from_center
+                    # 3. 1/distance
+                    if not closest_distance == 0:
+                        field[y][x] += (1500/(math.sqrt(closest_distance)))
+                    #field[y][x] = (((maxY - minY) * (maxX - minX)) ** (1/2) * 200 / sum(map(lambda pt: math.sqrt((pt[0] - x) ** 2 + (pt[1] - y) ** 2), perimeter)))**2
 
         # pln = len(perimeter)
         # for pindex in range(pln):
