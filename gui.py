@@ -5,37 +5,16 @@ import matplotlib.patches as patches
 import obstacle
 import math
 import robot
-# import bezier
-# import numpy as np
-from functools import reduce
 
 # Distances in cm
 FIELD_DIM_X = 600
 FIELD_DIM_Y = 900
 GOAL = (500, 600)
 STEPTH = 0.2
-# STEP_COST = 3
-# SPLITS = 4
-
-# def pathfind(location, target, curPath = []):
-#
-#     if location == target:
-#         return target
-#     if len(curPath) > 20 or location[0] < 0 or location[1] < 0 or location[0] > FIELD_DIM or location[1] > FIELD_DIM:
-#         return
-#     print(location)
-#     paths = []
-#     for split in range(SPLITS):
-#         paths.append(pathfind([location[0] + random.randint(-1, 1), location[1] + random.randint(-1, 1)], target, curPath + location))
-
-# print(pathfind([5, 3], [6, 5]))
 
 
 def main():
     bot = robot.Robot(10, 10, math.pi / 2, 2)
-    # obstacles = [obstacle.Obstacle(10, 2, 1, 3, bot), obstacle.Obstacle(3, 4, 1, 1, bot),
-    #              obstacle.Obstacle(5, 2, 1, 1, bot), obstacle.Obstacle(15, 8, 1, 1, bot),
-    #              obstacle.Obstacle(5, 13, 1, 1, bot)]
     obstacles = [obstacle.Obstacle(200, 200, 1, 50, bot), obstacle.Obstacle(500, 100, -2, 20, bot)]
     start = [1, 1]
     target = [18, 18]
@@ -48,32 +27,16 @@ def main():
 
     for obs in obstacles:
         p = obs.perimeter_points()
-        perimeter = p[0] + p[1] + p[2]
-        minX = min(list(map(lambda pt: pt[0], p[0])))
-        maxX = max(list(map(lambda pt: pt[0], p[0])))
-        minY = min(list(map(lambda pt: pt[1], p[0])))
-        maxY = max(list(map(lambda pt: pt[1], p[0])))
+        min_x = min(list(map(lambda pt: pt[0], p[0])))
+        max_x = max(list(map(lambda pt: pt[0], p[0])))
+        min_y = min(list(map(lambda pt: pt[1], p[0])))
+        max_y = max(list(map(lambda pt: pt[1], p[0])))
         avg_perimeter = list(map(lambda ptA, ptB: ((ptA[0] + ptB[0])/2, (ptA[1] + ptB[1])/2), p[0], p[1]))
         print(len(avg_perimeter))
-        # perimeter = []
-        # for i in range(len(p[0])):
-        #     perimeter.append(p[0].pop())
-        #     perimeter.append(p[1][i])
 
-        # for i in range(len(p[1])):
-        #     perimeter.append(p[1].pop())
-        #     perimeter.append(p[2].pop())
-        # for point in perimeter:
-        #     if 0 <= point[0] < FIELD_DIM_X and 0 <= point[1] < FIELD_DIM_Y:
-        #         field[point[0]][point[1]] += 100
-        #         for x in range(-10, 10):
-        #             for y in range(-10, 10):
-        #                 if not x * y == 0:
-        #                     field[point[0] + x][point[1] + y] += 100 / (abs(x * y))
-
-        for y in range(minY, maxY):
-            for x in range(minX, maxX):
-                if (0 <= x < FIELD_DIM_X and 0 <= y < FIELD_DIM_Y):
+        for y in range(min_y, max_y):
+            for x in range(min_x, max_x):
+                if 0 <= x < FIELD_DIM_X and 0 <= y < FIELD_DIM_Y:
                     # 1. get closest point in avg_perimeter
                     closest_distance = (x - avg_perimeter[0][0])**2 + (y - avg_perimeter[0][1])**2
                     for coord in avg_perimeter:
@@ -85,34 +48,9 @@ def main():
                     dist_from_center = (x - center[0])**2 + (y - center[1])**2
                     # 3. check which one is the closest
                     closest_distance = closest_distance if closest_distance < dist_from_center else dist_from_center
-                    # 3. 1/distance
+                    # 4. scale the distance
                     if not closest_distance == 0:
-                        field[y][x] += (200/(math.sqrt(closest_distance)))
-                    #field[y][x] = (((maxY - minY) * (maxX - minX)) ** (1/2) * 200 / sum(map(lambda pt: math.sqrt((pt[0] - x) ** 2 + (pt[1] - y) ** 2), perimeter)))**2
-
-        # pln = len(perimeter)
-        # for pindex in range(pln):
-        #     x = perimeter[pindex][0]
-        #     y = perimeter[pindex][1]
-        #     while not perimeter[(pindex + 1) % pln][0] - x == 0 or not perimeter[(pindex + 1) % pln][1] - y == 0:
-        #         if 0 <= perimeter[pindex][0] < FIELD_DIM_X and 0 <= perimeter[pindex][1] < FIELD_DIM_Y:
-        #             field[int(y)][int(x)] += 100
-        #         if not perimeter[(pindex + 1) % pln][0] - x == 0:
-        #             x += (perimeter[(pindex + 1) % pln][0] - x) / abs(perimeter[(pindex + 1) % pln][0] - x)
-        #         if not perimeter[(pindex + 1) % pln][1] - y == 0:
-        #             y += (perimeter[(pindex + 1) % pln][1] - y) / abs(perimeter[(pindex + 1) % pln][1] - y)
-        # mid = (int(sum(map(lambda point: point[0], perimeter)) / pln), int(sum(map(lambda point: point[1], perimeter)) / pln))
-
-
-        # print(mid)
-        # for y in range(-50, 50):
-        #     for x in range(-50, 50):
-        #         if 0 <= x < FIELD_DIM_X and 0 <= y < FIELD_DIM_Y:
-        #             if not x * y == 0:
-        #                 field[mid[1] + y][mid[0] + x] += 200 / (abs(x * y))
-        # for y in range(FIELD_DIM_Y):
-        #     for x in range(FIELD_DIM_X):
-        #         field[y][x] += obs.cost_of_point_after_time(x, y, 2)
+                        field[y][x] += 30 * .9**(math.sqrt(closest_distance))
 
     for y in range(FIELD_DIM_Y):
         for x in range(FIELD_DIM_X):
@@ -121,35 +59,29 @@ def main():
     fig, ax = plt.subplots()
     ax.axis('equal')
 
-    bestPath = pathfind(field, (bot.x, bot.y), GOAL)
-    smoothPath = smooth(bestPath)
-    # smoothPath = smoothPath[:-1]
-    # print(smoothPath)
-    # npPath = np.asfortranarray(smoothPath).transpose().astype(float)
-    # print(npPath)
-    # curve = bezier.Curve.from_nodes(npPath)
-    # print(curve)
-    # print(curve.plot(num_pts=128))
-    # bestPath = [target, [13, 12], [1, 12], start]
-    codes = [pth.Path.MOVETO] + [pth.Path.CURVE3 for _ in range(len(smoothPath) - 1)]
-    path = pth.Path(smoothPath, codes)
-    pathPatch = patches.PathPatch(path, facecolor='none', edgecolor='black', alpha=0.5, lw=3)
-    startCir = patches.Circle(start, radius=0.5, color='black')
-    targetCir = patches.Circle(target, radius=0.5, color='black')
-    ax.add_patch(pathPatch)
-    ax.add_patch(startCir)
-    ax.add_patch(targetCir)
+    best_path = pathfind(field, (bot.x, bot.y), GOAL)
+    smooth_path = smooth(best_path)
+    codes = [pth.Path.MOVETO] + [pth.Path.CURVE3 for _ in range(len(smooth_path) - 1)]
+    path = pth.Path(smooth_path, codes)
+    path_patch = patches.PathPatch(path, facecolor='none', edgecolor='black', alpha=0.5, lw=3)
+    start_cir = patches.Circle(start, radius=0.5, color='black')
+    target_cir = patches.Circle(target, radius=0.5, color='black')
+    ax.add_patch(path_patch)
+    ax.add_patch(start_cir)
+    ax.add_patch(target_cir)
 
     CS = ax.pcolormesh(field, cmap=cm.Spectral_r)
-    cbar = fig.colorbar(CS)
+    fig.colorbar(CS)
     ax.set_title('Field Pathfinding Costs')
     plt.show(block=True)
+
 
 def unitWith0(val):
     if val == 0:
         return 0
     out = val/(abs(val))
     return out
+
 
 def pathfind(field, start, end):
     x = start[0]
@@ -174,6 +106,7 @@ def pathfind(field, start, end):
         cost += minCost
     return path
 
+
 def smooth(path):
     index = 0
     corrections = 0
@@ -196,8 +129,6 @@ def smooth(path):
 
     return smooth(path)
 
+
 if __name__ == '__main__':
     main()
-    # robot = robot.Robot(0, 0, math.pi/2, 2)
-    # obstacle = obstacle.Obstacle(5, 5, 0*math.pi/4, 5, robot)
-    # print(obstacle.perimeter_points())

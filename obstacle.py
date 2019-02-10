@@ -18,8 +18,6 @@ class Obstacle(robot.Robot):
     def perimeter_points(self):
 
         perimeter = []
-        inner_perimeter = []
-        center_perimeter = []
 
         time = self.time_to_collision(self.main_robot.x - self.x,
                                       self.main_robot.y - self.y,
@@ -61,11 +59,11 @@ class Obstacle(robot.Robot):
 
     def position_after_acc(self, x0, v0, acc, time, cap):
         # print("acc: " + str(acc))
-        if (acc == 0):
+        if acc == 0:
             return x0 + (time * v0)
         else:
             precapTime = (cap - v0) / acc
-            if (precapTime > time):
+            if precapTime > time:
                 return x0 + (v0 * time + 0.5 * acc * time ** 2)
             else:
                 return x0 + (v0 * precapTime + 0.5 * acc * precapTime ** 2) + ((time - precapTime) * cap)
