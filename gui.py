@@ -5,6 +5,8 @@ import matplotlib.patches as patches
 import obstacle
 import math
 import robot
+# import bezier
+# import numpy as np
 from functools import reduce
 
 # Distances in cm
@@ -34,7 +36,7 @@ def main():
     # obstacles = [obstacle.Obstacle(10, 2, 1, 3, bot), obstacle.Obstacle(3, 4, 1, 1, bot),
     #              obstacle.Obstacle(5, 2, 1, 1, bot), obstacle.Obstacle(15, 8, 1, 1, bot),
     #              obstacle.Obstacle(5, 13, 1, 1, bot)]
-    obstacles = [obstacle.Obstacle(200, 300, 1, 50, bot), obstacle.Obstacle(500, 100, -2, 20, bot)]
+    obstacles = [obstacle.Obstacle(200, 200, 1, 50, bot), obstacle.Obstacle(500, 100, -2, 20, bot)]
     start = [1, 1]
     target = [18, 18]
 
@@ -119,9 +121,18 @@ def main():
     fig, ax = plt.subplots()
     ax.axis('equal')
 
-    bestPath = [target, [13, 12], [1, 12], start]
-    codes = [pth.Path.MOVETO] + [pth.Path.CURVE4 for _ in range(len(bestPath) - 1)]
-    path = pth.Path(bestPath, codes)
+    bestPath = pathfind(field, (bot.x, bot.y), GOAL)
+    smoothPath = smooth(bestPath)
+    # smoothPath = smoothPath[:-1]
+    # print(smoothPath)
+    # npPath = np.asfortranarray(smoothPath).transpose().astype(float)
+    # print(npPath)
+    # curve = bezier.Curve.from_nodes(npPath)
+    # print(curve)
+    # print(curve.plot(num_pts=128))
+    # bestPath = [target, [13, 12], [1, 12], start]
+    codes = [pth.Path.MOVETO] + [pth.Path.CURVE3 for _ in range(len(smoothPath) - 2)] + [pth.Path.STOP]
+    path = pth.Path(smoothPath, codes)
     pathPatch = patches.PathPatch(path, facecolor='none', edgecolor='black', alpha=0.5, lw=3)
     startCir = patches.Circle(start, radius=0.5, color='black')
     targetCir = patches.Circle(target, radius=0.5, color='black')
@@ -134,6 +145,56 @@ def main():
     ax.set_title('Field Pathfinding Costs')
     plt.show(block=True)
 
+def unitWith0(val):
+    if val == 0:
+        return 0
+    out = val/(abs(val))
+    return out
+
+def pathfind(field, start, end):
+    x = start[0]
+    y = start[1]
+    cost = 0
+    path = [start]
+
+    while x != end[0] or y != end[1]:
+        minChoice = [0, 0]
+        minCost = math.inf
+        for i in range(-1, 2):
+            for j in range (-1, 2):
+                if (i != 0 or j != 0) and (0 < y+i < FIELD_DIM_Y and 0 < x+j < FIELD_DIM_X):
+                    cost = field[y+i][x+j] # + (-13 * j * unitWith0(end[0]-x)) + (-13 * i * unitWith0(end[1]-y))
+                    # TODO: isn't down gradient by definition the right direction?
+                    if cost < minCost:
+                        minChoice = [j, i]
+                        minCost = cost
+        x += minChoice[0]
+        y += minChoice[1]
+        path.append([x, y])
+        cost += minCost
+    return path
+
+def smooth(path):
+    index = 0
+    corrections = 0
+
+    while index < len(path) - 1:
+        dx1 = path[index][0] - path[index - 1][0]
+        dx2 = path[index + 1][0] - path[index][0]
+        dx1 = dx1 if not dx1 == 0 else 0.001
+        dx2 = dx2 if not dx2 == 0 else 0.001
+        dy1 = path[index][1] - path[index - 1][1]
+        dy2 = path[index + 1][1] - path[index][1]
+        if dy1/dx1 == dy2/dx2:
+            path.pop(index)
+            corrections += 1
+        else:
+            index += 1
+
+    if corrections == 0:
+        return path
+
+    return smooth(path)
 
 if __name__ == '__main__':
     main()
