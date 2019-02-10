@@ -32,7 +32,7 @@ STEPTH = 0.2
 
 
 def main():
-    bot = robot.Robot(0, 0, math.pi / 2, 2)
+    bot = robot.Robot(10, 10, math.pi / 2, 2)
     # obstacles = [obstacle.Obstacle(10, 2, 1, 3, bot), obstacle.Obstacle(3, 4, 1, 1, bot),
     #              obstacle.Obstacle(5, 2, 1, 1, bot), obstacle.Obstacle(15, 8, 1, 1, bot),
     #              obstacle.Obstacle(5, 13, 1, 1, bot)]
@@ -131,7 +131,7 @@ def main():
     # print(curve)
     # print(curve.plot(num_pts=128))
     # bestPath = [target, [13, 12], [1, 12], start]
-    codes = [pth.Path.MOVETO] + [pth.Path.CURVE3 for _ in range(len(smoothPath) - 2)] + [pth.Path.STOP]
+    codes = [pth.Path.MOVETO] + [pth.Path.CURVE3 for _ in range(len(smoothPath) - 1)]
     path = pth.Path(smoothPath, codes)
     pathPatch = patches.PathPatch(path, facecolor='none', edgecolor='black', alpha=0.5, lw=3)
     startCir = patches.Circle(start, radius=0.5, color='black')
@@ -140,7 +140,7 @@ def main():
     ax.add_patch(startCir)
     ax.add_patch(targetCir)
 
-    CS = ax.contourf(field, cmap=cm.Spectral_r)
+    CS = ax.pcolormesh(field, cmap=cm.Spectral_r)
     cbar = fig.colorbar(CS)
     ax.set_title('Field Pathfinding Costs')
     plt.show(block=True)
