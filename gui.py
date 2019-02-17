@@ -32,10 +32,13 @@ def main():
         min_y = min(list(map(lambda pt: pt[1], p[0])))
         max_y = max(list(map(lambda pt: pt[1], p[0])))
         avg_perimeter = list(map(lambda ptA, ptB: ((ptA[0] + ptB[0])/2, (ptA[1] + ptB[1])/2), p[0], p[1]))
-        print(len(avg_perimeter))
+        midpoint_x = (min_x + max_x)//2
+        midpoint_y = (min_y + max_y)//2
 
         for y in range(min_y, max_y):
-            for x in range(min_x, max_x):
+            # actually half of the strip length
+            strip_length = round(math.sqrt(((max_y - min_y)/2)**2 - (y - midpoint_y)**2))
+            for x in range(midpoint_x - (strip_length - 1), midpoint_x + (strip_length - 1)):
                 if 0 <= x < FIELD_DIM_X and 0 <= y < FIELD_DIM_Y:
                     # 1. get closest point in avg_perimeter
                     closest_distance = (x - avg_perimeter[0][0])**2 + (y - avg_perimeter[0][1])**2
@@ -50,7 +53,7 @@ def main():
                     closest_distance = closest_distance if closest_distance < dist_from_center else dist_from_center
                     # 4. scale the distance
                     if not closest_distance == 0:
-                        field[y][x] += 30 * .9**(math.sqrt(closest_distance))
+                        field[y][x] += 30 * .97**(math.sqrt(closest_distance))
 
     for y in range(FIELD_DIM_Y):
         for x in range(FIELD_DIM_X):
