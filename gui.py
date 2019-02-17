@@ -5,6 +5,7 @@ import matplotlib.patches as patches
 import obstacle
 import math
 import robot
+import random
 
 # Distances in cm
 FIELD_DIM_X = 600
@@ -12,10 +13,9 @@ FIELD_DIM_Y = 900
 GOAL = (500, 600)
 STEPTH = 0.2
 
-
 def main():
     bot = robot.Robot(10, 10, math.pi / 2, 2)
-    obstacles = [obstacle.Obstacle(200, 200, 1, 50, bot), obstacle.Obstacle(500, 100, -2, 20, bot)]
+    obstacles = [obstacle.Obstacle(200, 200, 1, 50, bot), obstacle.Obstacle(500, 100, -2, 20, bot), obstacle.Obstacle(250, 200, 1, 50, bot), obstacle.Obstacle(280, 170, 1, 50, bot)]
     start = [1, 1]
     target = [18, 18]
 
@@ -60,7 +60,10 @@ def main():
     ax.axis('equal')
 
     best_path = pathfind(field, (bot.x, bot.y), GOAL)
+    print(best_path)
     smooth_path = smooth(best_path)
+    print(smooth_path)
+    print(declump(smooth_path))
     codes = [pth.Path.MOVETO] + [pth.Path.CURVE3 for _ in range(len(smooth_path) - 1)]
     path = pth.Path(smooth_path, codes)
     path_patch = patches.PathPatch(path, facecolor='none', edgecolor='black', alpha=0.5, lw=3)
@@ -94,7 +97,7 @@ def pathfind(field, start, end):
         minCost = math.inf
         for i in range(-1, 2):
             for j in range (-1, 2):
-                if (i != 0 or j != 0) and (0 < y+i < FIELD_DIM_Y and 0 < x+j < FIELD_DIM_X):
+                if (i != 0 or j != 0) and (0 < y+i < FIELD_DIM_Y and 0 < x+j < FIELD_DIM_X) and not [x+j, y+i] in path:
                     cost = field[y+i][x+j] # + (-13 * j * unitWith0(end[0]-x)) + (-13 * i * unitWith0(end[1]-y))
                     # TODO: isn't down gradient by definition the right direction?
                     if cost < minCost:
@@ -129,6 +132,10 @@ def smooth(path):
 
     return smooth(path)
 
+def declump(path): # check straight line path between two random points and compare cost to optimize, repeat n times
+    for i in range(len(path)):
+        p1 = random.randint(0, len(path))
+        p2 = random.randint(0, len(path))
 
 if __name__ == '__main__':
     main()
