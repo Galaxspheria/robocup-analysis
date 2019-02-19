@@ -11,11 +11,12 @@ import random
 FIELD_DIM_X = 600
 FIELD_DIM_Y = 900
 GOAL = (500, 600)
-STEPTH = 0.2
+STEPTH = 0.12
 
 def main():
     bot = robot.Robot(10, 10, math.pi / 2, 2)
-    obstacles = [obstacle.Obstacle(200, 200, 1, 50, bot), obstacle.Obstacle(500, 100, -2, 20, bot), obstacle.Obstacle(250, 200, 1, 50, bot), obstacle.Obstacle(280, 170, 1, 50, bot)]
+    obstacles = [obstacle.Obstacle(200, 200, 1, 50, bot), obstacle.Obstacle(500, 100, -2, 20, bot), obstacle.Obstacle(250, 200, 1, 50, bot), obstacle.Obstacle(160, 230, 1, 50, bot)]
+    # obstacles = [obstacle.Obstacle(200, 200, 1, 50, bot), obstacle.Obstacle(500, 100, -2, 20, bot), obstacle.Obstacle(250, 200, 1, 50, bot), obstacle.Obstacle(160, 230, 1, 50, bot), obstacle.Obstacle(10, 230, 1, 50, bot), obstacle.Obstacle(40, 230, 1, 50, bot), obstacle.Obstacle(70, 230, 1, 50, bot), obstacle.Obstacle(100, 230, 1, 50, bot), obstacle.Obstacle(130, 230, 1, 50, bot), obstacle.Obstacle(270, 200, 1, 50, bot), obstacle.Obstacle(300, 200, 1, 50, bot), obstacle.Obstacle(340, 200, 1, 50, bot), obstacle.Obstacle(300, 290, 1, 50, bot)]
     start = [1, 1]
     target = [18, 18]
 
@@ -66,7 +67,7 @@ def main():
     print(best_path)
     smooth_path = smooth(best_path)
     print(smooth_path)
-    print(declump(smooth_path))
+    smooth_path = declump(field, smooth_path)
     codes = [pth.Path.MOVETO] + [pth.Path.CURVE3 for _ in range(len(smooth_path) - 1)]
     path = pth.Path(smooth_path, codes)
     path_patch = patches.PathPatch(path, facecolor='none', edgecolor='black', alpha=0.5, lw=3)
@@ -101,7 +102,7 @@ def pathfind(field, start, end):
         for i in range(-1, 2):
             for j in range (-1, 2):
                 if (i != 0 or j != 0) and (0 < y+i < FIELD_DIM_Y and 0 < x+j < FIELD_DIM_X) and not [x+j, y+i] in path:
-                    cost = field[y+i][x+j] # + (-13 * j * unitWith0(end[0]-x)) + (-13 * i * unitWith0(end[1]-y))
+                    cost = field[y+i][x+j] + (-1 * j * unitWith0(end[0]-x)) + (-1 * i * unitWith0(end[1]-y)) # TODO for tuesday: goal bias here could also be supplemented by stepth???
                     # TODO: isn't down gradient by definition the right direction?
                     if cost < minCost:
                         minChoice = [j, i]
@@ -135,10 +136,40 @@ def smooth(path):
 
     return smooth(path)
 
-def declump(path): # check straight line path between two random points and compare cost to optimize, repeat n times
+def directcost(field, start, end):
+    x = start[0]
+    y = start[1]
+    cost = 0
+    path = [start]
+
+    while x != end[0] or y != end[1]:
+        j = int(unitWith0(end[0]-x))
+        i = int(unitWith0(end[1]-y))
+        x += j
+        y += i
+        path.append([x, y])
+        cost += field[y + i][x + j]
+    return cost, path
+
+def pathcost(field, path):
+    cost = 0
+
+    for point in path:
+        cost += field[point[1]][point[0]]
+
+    return cost, path
+
+def declump(field, path): # check straight line path between two random points and compare cost to optimize, repeat n times
     for i in range(len(path)):
-        p1 = random.randint(0, len(path))
-        p2 = random.randint(0, len(path))
+        p1 = random.randint(0, len(path) - 1)
+        p2 = random.randint(p1, len(path) - 1)
+        dir = directcost(field, path[p1], path[p2])
+        cur = pathcost(field, path[p1:p2+1]) # TODO: think this needs to happen BEFORE other smoothing?
+        # print(dir[0], len(dir[1]))
+        # print(cur[0], len(cur[1]))
+        if dir[0] < cur[0]:
+            path = path[:p1] + dir[1] + path[p2+1:]
+    return path
 
 if __name__ == '__main__':
     main()
