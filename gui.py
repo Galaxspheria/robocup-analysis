@@ -15,8 +15,8 @@ STEPTH = 0.12
 
 def main():
     bot = robot.Robot(10, 10, math.pi / 2, 2)
-    obstacles = [obstacle.Obstacle(200, 200, 1, 50, bot), obstacle.Obstacle(500, 100, -2, 20, bot), obstacle.Obstacle(250, 200, 1, 50, bot), obstacle.Obstacle(160, 230, 1, 50, bot)]
-    # obstacles = [obstacle.Obstacle(200, 200, 1, 50, bot), obstacle.Obstacle(500, 100, -2, 20, bot), obstacle.Obstacle(250, 200, 1, 50, bot), obstacle.Obstacle(160, 230, 1, 50, bot), obstacle.Obstacle(10, 230, 1, 50, bot), obstacle.Obstacle(40, 230, 1, 50, bot), obstacle.Obstacle(70, 230, 1, 50, bot), obstacle.Obstacle(100, 230, 1, 50, bot), obstacle.Obstacle(130, 230, 1, 50, bot), obstacle.Obstacle(270, 200, 1, 50, bot), obstacle.Obstacle(300, 200, 1, 50, bot), obstacle.Obstacle(340, 200, 1, 50, bot), obstacle.Obstacle(300, 290, 1, 50, bot)]
+    # obstacles = [obstacle.Obstacle(200, 200, 1, 50, bot), obstacle.Obstacle(500, 100, -2, 20, bot), obstacle.Obstacle(250, 200, 1, 50, bot), obstacle.Obstacle(160, 230, 1, 50, bot)]
+    obstacles = [obstacle.Obstacle(200, 200, 1, 50, bot), obstacle.Obstacle(500, 100, -2, 20, bot), obstacle.Obstacle(250, 200, 1, 50, bot), obstacle.Obstacle(160, 230, 1, 50, bot), obstacle.Obstacle(10, 230, 1, 50, bot), obstacle.Obstacle(40, 230, 1, 50, bot), obstacle.Obstacle(70, 230, 1, 50, bot), obstacle.Obstacle(100, 230, 1, 50, bot), obstacle.Obstacle(130, 230, 1, 50, bot), obstacle.Obstacle(270, 200, 1, 50, bot), obstacle.Obstacle(300, 200, 1, 50, bot), obstacle.Obstacle(340, 200, 1, 50, bot), obstacle.Obstacle(300, 290, 1, 50, bot)]
     start = [1, 1]
     target = [18, 18]
 
@@ -65,9 +65,9 @@ def main():
 
     best_path = pathfind(field, (bot.x, bot.y), GOAL)
     print(best_path)
-    smooth_path = smooth(best_path)
+    smooth_path = smooth(best_path, field)
     print(smooth_path)
-    smooth_path = declump(field, smooth_path)
+    # smooth_path = declump(field, smooth_path)
     codes = [pth.Path.MOVETO] + [pth.Path.CURVE3 for _ in range(len(smooth_path) - 1)]
     path = pth.Path(smooth_path, codes)
     path_patch = patches.PathPatch(path, facecolor='none', edgecolor='black', alpha=0.5, lw=3)
@@ -100,7 +100,7 @@ def pathfind(field, start, end):
         minChoice = [0, 0]
         minCost = math.inf
         for i in range(-1, 2):
-            for j in range (-1, 2):
+            for j in range(-1, 2):
                 if (i != 0 or j != 0) and (0 < y+i < FIELD_DIM_Y and 0 < x+j < FIELD_DIM_X) and not [x+j, y+i] in path:
                     cost = field[y+i][x+j] + (-1 * j * unitWith0(end[0]-x)) + (-1 * i * unitWith0(end[1]-y)) # TODO for tuesday: goal bias here could also be supplemented by stepth???
                     # TODO: isn't down gradient by definition the right direction?
@@ -114,27 +114,28 @@ def pathfind(field, start, end):
     return path
 
 
-def smooth(path):
-    index = 0
-    corrections = 0
+def smooth(path, field):
+    # field has opposite coordinates
+    start_coord = path[0]
+    smooth_curve = list()
+    smooth_curve.append(path[0])
+    real_cost = field[start_coord[1]][start_coord[0]]
+    smooth_cost = field[start_coord[1]][start_coord[0]]
+    # traverses along all the coordinates in the path
+    for i in range(1, len(path)):
+        cur_coord = path[i]
+        # the cost of the actual path
+        real_cost += field[cur_coord[1]][cur_coord[0]]
+        # calculating the cost from the starting coordinate to the current coordinate in a straight line
+        smooth_cost = directcost(field, start_coord, cur_coord)
+        # if the smoothed cost is more, append the last point where the smoothese cost is less or the same
+        # treats that point as the new starting point
+        if smooth_cost > real_cost or i == len(path)-1:
+            smooth_curve.append(path[i-1])
+            start_coord = path[i-1]
+            real_cost = field[start_coord[1]][start_coord[0]]
+    return smooth_curve
 
-    while index < len(path) - 1:
-        dx1 = path[index][0] - path[index - 1][0]
-        dx2 = path[index + 1][0] - path[index][0]
-        dx1 = dx1 if not dx1 == 0 else 0.001
-        dx2 = dx2 if not dx2 == 0 else 0.001
-        dy1 = path[index][1] - path[index - 1][1]
-        dy2 = path[index + 1][1] - path[index][1]
-        if dy1/dx1 == dy2/dx2:
-            path.pop(index)
-            corrections += 1
-        else:
-            index += 1
-
-    if corrections == 0:
-        return path
-
-    return smooth(path)
 
 def directcost(field, start, end):
     x = start[0]
@@ -149,7 +150,7 @@ def directcost(field, start, end):
         y += i
         path.append([x, y])
         cost += field[y + i][x + j]
-    return cost, path
+    return cost
 
 def pathcost(field, path):
     cost = 0
@@ -159,17 +160,6 @@ def pathcost(field, path):
 
     return cost, path
 
-def declump(field, path): # check straight line path between two random points and compare cost to optimize, repeat n times
-    for i in range(len(path)):
-        p1 = random.randint(0, len(path) - 1)
-        p2 = random.randint(p1, len(path) - 1)
-        dir = directcost(field, path[p1], path[p2])
-        cur = pathcost(field, path[p1:p2+1]) # TODO: think this needs to happen BEFORE other smoothing?
-        # print(dir[0], len(dir[1]))
-        # print(cur[0], len(cur[1]))
-        if dir[0] < cur[0]:
-            path = path[:p1] + dir[1] + path[p2+1:]
-    return path
 
 if __name__ == '__main__':
     main()
